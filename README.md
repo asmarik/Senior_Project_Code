@@ -13,8 +13,8 @@ A production-ready compliance analysis system featuring hybrid RAG retrieval (BM
 ## ✨ Key Features
 
 ### 🚀 **Multi-Mode Analysis**
-- **Fast Mode** (5-10s): Traditional semantic matching using BM25 + E5 embeddings
-- **LLM Mode** (15-30s): AI-powered analysis with GPT-4o-mini for maximum accuracy
+- **Fast Mode** : Traditional semantic matching using BM25 + E5 embeddings
+- **LLM Mode** : AI-powered analysis with GPT-4o-mini for maximum accuracy
 - **Hybrid Mode**: Intelligent combination of retrieval methods and LLM verification
 
 ### 🧠 **Advanced AI Capabilities**
@@ -24,7 +24,7 @@ A production-ready compliance analysis system featuring hybrid RAG retrieval (BM
 - **Confidence Ratings**: Every LLM analysis includes confidence levels (high/medium/low)
 
 ### 📊 **Comprehensive Analysis**
-- **Article-Level Scoring**: Coverage analysis for all PDPL articles (0-100%)
+- **Article-Level Scoring**: Coverage analysis for all PDPL articles
 - **Clause-Level Granularity**: Detailed breakdown of individual requirements
 - **Gap Analysis**: Identifies missing, partial, and fully covered clauses
 - **Actionable Recommendations**: Specific suggestions with sample policy wording
