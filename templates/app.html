@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compliance Matcher - PolicyMatcher AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            950: '#020617',
+                        },
+                        brand: {
+                            400: '#FF9A5C',
+                            500: '#F77931',
+                            600: '#E55A1A',
+                            700: '#D14A0A',
+                        },
+                        indigo: {
+                            50: '#fff4ed',
+                            100: '#FFE5D4',
+                            400: '#FF9A5C',
+                            500: '#F77931',
+                            600: '#E55A1A',
+                            700: '#D14A0A',
+                        },
+                        purple: {
+                            50: '#fff4ed',
+                            100: '#FFE5D4',
+                            400: '#FF9A5C',
+                            500: '#F77931',
+                            600: '#E55A1A',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+    <!-- App Shell -->
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="hidden lg:flex lg:flex-col lg:w-64 bg-slate-900 dark:bg-slate-950 border-r border-slate-800">
+            <!-- Logo -->
+            <div class="flex items-center gap-3 h-16 px-6 border-b border-slate-800">
+                <a href="/" class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-sm font-bold text-white">PDPL Compliance</span>
+                        <span class="text-xs text-slate-400">Intelligence</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                <a href="#" onclick="navigateToView('dashboard'); return false;" data-view="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 text-white bg-indigo-600 shadow-lg shadow-indigo-500/30">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                <!-- Analysis Methods with Dropdown -->
+                <div class="space-y-1">
+                    <button onclick="toggleAnalysisDropdown()" class="nav-item w-full flex items-center justify-between gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 text-slate-300 hover:text-white hover:bg-slate-800" id="analysisMethodsBtn">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                            </svg>
+                            <span>Analysis Methods</span>
+                        </div>
+                        <svg id="analysisDropdownIcon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div id="analysisDropdown" class="hidden pl-4 space-y-1">
+                        <a href="#" onclick="selectMethodAndUpload('score'); return false;" class="nav-item flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            <span>Gap and Match Analysis</span>
+                        </a>
+                        <a href="#" onclick="selectMethodAndUpload('score-llm'); return false;" class="nav-item flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                            </svg>
+                            <span>Recommendation Analysis</span>
+                        </a>
+                    </div>
+                </div>
+                <a href="#" onclick="navigateToView('results'); return false;" data-view="results" class="nav-item flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 text-slate-300 hover:text-white hover:bg-slate-800">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    <span>Results</span>
+                </a>
+
+                <div class="pt-4 mt-4 border-t border-slate-800">
+                    <a href="/" class="nav-item flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 text-slate-300 hover:text-white hover:bg-slate-800">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        <span>Back to Home</span>
+                    </a>
+                    <a href="#" onclick="showHelp(); return false;" class="nav-item flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 text-slate-300 hover:text-white hover:bg-slate-800">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Help & Docs</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- System Status -->
+            <div class="px-6 py-4 border-t border-slate-800">
+                <div class="flex items-center gap-2 text-xs">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span class="text-slate-400">All systems operational</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex flex-col flex-1 overflow-hidden">
+            <!-- Top Navigation -->
+            <header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+                <div class="flex items-center justify-between h-full px-6">
+                    <!-- Mobile menu button -->
+                    <button onclick="toggleMobileMenu()" class="lg:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+
+                    <!-- Breadcrumb -->
+                    <div class="flex items-center gap-2 text-sm">
+                        <a href="/" class="text-slate-500 hover:text-indigo-600">Home</a>
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                        <span id="breadcrumbCurrent" class="font-semibold text-slate-900 dark:text-white">Dashboard</span>
+                    </div>
+
+                    <!-- Right actions -->
+                    <div class="flex items-center gap-3">
+                        <!-- Dark mode toggle -->
+                        <button onclick="toggleDarkMode()" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                            <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                            <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                            </svg>
+                        </button>
+
+                        <!-- User avatar -->
+                        <div class="relative">
+                            <button class="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+                                    U
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950">
+                <div class="max-w-7xl mx-auto px-6 py-6">
+                    <!-- Alert Container -->
+                    <div id="alertContainer" class="mb-6"></div>
+
+                    <!-- Dashboard View -->
+                    <div id="dashboardView" class="view-section">
+                        <!-- Analysis Features -->
+                        <div class="mb-8 text-center">
+                            <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-3">Available Analysis Methods</h1>
+                            <p class="text-slate-600 dark:text-slate-400 text-lg">Choose from our two powerful compliance analysis methods to assess your policy documents</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                            <!-- Gap and Match Analysis Feature -->
+                            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+                                <div class="p-6 flex flex-col flex-grow">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="w-14 h-14 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center">
+                                            <svg class="w-7 h-7 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                            </svg>
+                                        </div>
+                                        <span class="px-3 py-1 text-xs font-semibold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-full">AI-Powered</span>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3">Gap and Match Analysis</h3>
+                                    <p class="text-slate-600 dark:text-slate-400 mb-4">The Gap and Match Analysis module provides an article-level breakdown of all regulatory requirements. It automatically identifies which articles are fully covered, partially covered, or missing, allowing users to see exactly where compliance issues exist.</p>
+                                    <div class="space-y-2 mb-4">
+                                        <div class="flex items-start gap-2">
+                                            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            <span class="text-sm text-slate-700 dark:text-slate-300">Detects missing or weak areas in uploaded documents</span>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            <span class="text-sm text-slate-700 dark:text-slate-300">Classifies results into Full, Partial, or Missing</span>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            <span class="text-sm text-slate-700 dark:text-slate-300">Highlights reasons for missing articles with automated explanations</span>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            <span class="text-sm text-slate-700 dark:text-slate-300">Provides a clean, structured view to quickly understand compliance gaps</span>
+                                        </div>
+                                    </div>
+                                    <button onclick="selectMethodAndUpload('score')" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors mt-auto">
+                                        <span>Select This Method</span>
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Recommendation Analysis Feature -->
+                            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+                                <div class="p-6 flex flex-col flex-grow">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="w-14 h-14 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/20 flex items-center justify-center">
+                                            <svg class="w-7 h-7 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                            </svg>
+                                        </div>
+                                        <span class="px-3 py-1 text-xs font-semibold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-full">AI-Powered</span>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3">Recommendation Analysis</h3>
+                                    <p class="text-slate-600 dark:text-slate-400 mb-4">The Recommendation Analysis provides smart, context-aware actions to help improve compliance. It analyzes the detected gaps and suggests specific remediation steps, best practices, and targeted fixes.</p>
+                                    <div class="space-y-2 mb-4">
+                                        <div class="flex items-start gap-2">
+                                            <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            <span class="text-sm text-slate-700 dark:text-slate-300">Generates tailored improvement recommendations based on missing or partially covered articles</span>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            <span class="text-sm text-slate-700 dark:text-slate-300">Prioritizes fixes by impact and urgency</span>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            <span class="text-sm text-slate-700 dark:text-slate-300">Suggests updates, revisions, or additions to meet legal requirements</span>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            <span class="text-sm text-slate-700 dark:text-slate-300">Uses hybrid retrieval + LLM reasoning for accurate, context-aligned suggestions</span>
+                                        </div>
+                                    </div>
+                                    <button onclick="selectMethodAndUpload('score-llm')" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors mt-auto">
+                                        <span>Select This Method</span>
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload View -->
+                    <div id="uploadView" class="view-section hidden">
+                        <div class="mb-6">
+                            <h1 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Upload Policy Document</h1>
+                            <p class="text-slate-600 dark:text-slate-400">Upload your compliance policy for comprehensive PDPL analysis</p>
+                            
+                            <!-- Selected Method Indicator -->
+                            <div id="selectedMethodIndicator" class="mt-4 p-4 bg-indigo-50 dark:bg-indigo-950 border border-indigo-200 dark:border-indigo-800 rounded-xl hidden">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-semibold text-slate-900 dark:text-white" id="selectedMethodName">Selected Method</div>
+                                            <div class="text-xs text-slate-600 dark:text-slate-400" id="selectedMethodDesc">Method description</div>
+                                        </div>
+                                    </div>
+                                    <button onclick="navigateToView('dashboard')" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium">
+                                        Change Method
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Upload Card -->
+                        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                            <div class="p-8">
+                                <!-- Upload Zone -->
+                                <div id="uploadZone" class="relative border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 hover:border-indigo-500 dark:hover:border-indigo-500 transition-all duration-300 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                                    <input type="file" id="fileInput" accept=".pdf" style="display: none !important; visibility: hidden !important; position: absolute !important; width: 0 !important; height: 0 !important; opacity: 0 !important; pointer-events: none !important;">
+                                    <div id="uploadIcon" class="flex flex-col items-center justify-center pointer-events-none">
+                                        <div class="w-20 h-20 rounded-2xl bg-indigo-500/10 dark:bg-indigo-500/20 flex items-center justify-center mb-6">
+                                            <svg class="w-10 h-10 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-2 text-center">Drop your policy document here</h3>
+                                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-6 text-center">or click to browse your files</p>
+                                        <button type="button" id="browseFilesBtn" onclick="window.browseFiles(); return false;" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors pointer-events-auto mb-6">
+                                            Browse Files
+                                        </button>
+                                        <div class="flex items-center justify-center gap-6 text-xs text-slate-500 dark:text-slate-500">
+                                            <span class="flex items-center gap-1.5">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                                </svg>
+                                                PDF format
+                                            </span>
+                                            <span class="flex items-center gap-1.5">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                Max 16MB
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- File Preview -->
+                                <div id="filePreview" class="hidden p-4 bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-200 dark:border-emerald-800 rounded-xl mt-6">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                                            <div class="w-12 h-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0 self-center">
+                                                <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="flex flex-col justify-center min-w-0 flex-1">
+                                                <div id="fileName" class="text-sm font-semibold text-slate-900 dark:text-white truncate leading-snug"></div>
+                                                <div class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 leading-snug mt-0.5">
+                                                    <span id="fileSize"></span>
+                                                    <span class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                                                        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                                        </svg>
+                                                        Ready
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button onclick="clearFile()" class="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors flex-shrink-0">
+                                            <svg class="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="pt-4 border-t border-emerald-200 dark:border-emerald-800">
+                                        <button id="runAnalysisBtn" onclick="runSelectedAnalysis()" class="hidden w-full flex items-center justify-center gap-2 px-6 py-4 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl">
+                                            <span>Run Analysis</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Analysis View -->
+                    <div id="analysisView" class="view-section hidden">
+                        <div class="mb-6">
+                            <h1 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Analysis Methods</h1>
+                            <p class="text-slate-600 dark:text-slate-400">Choose your preferred compliance analysis method</p>
+                        </div>
+
+                        <!-- Method Cards Grid -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Gap and Match Analysis -->
+                            <div data-method="score" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300">
+                                <div class="p-6">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="w-12 h-12 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/20 flex items-center justify-center">
+                                            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                            </svg>
+                                        </div>
+                                        <span class="px-3 py-1 text-xs font-semibold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-full">AI-Powered</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Gap & Match Analysis</h3>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">Comprehensive analysis via Gemini API combining score + missing items with AI explanations.</p>
+                                    <button data-run-btn onclick="runAnalysis('score')" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                        </svg>
+                                        <span>Run Analysis</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Recommendation Analysis -->
+                            <div data-method="score-llm" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300">
+                                <div class="p-6">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="w-12 h-12 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/20 flex items-center justify-center">
+                                            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                            </svg>
+                                        </div>
+                                        <span class="px-3 py-1 text-xs font-semibold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-full">AI-Powered</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Recommendation Analysis</h3>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">Deep AI analysis with contextual understanding and enhanced accuracy.</p>
+                                    <button data-run-btn onclick="runAnalysis('score-llm')" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                        </svg>
+                                        <span>Run Deep Analysis</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results View -->
+                    <div id="resultsView" class="view-section hidden">
+                        <div class="mb-6">
+                            <h1 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Analysis Results</h1>
+                            <p class="text-slate-600 dark:text-slate-400">Comprehensive compliance assessment</p>
+                        </div>
+
+                        <div id="resultsContainer">
+                            <!-- Results will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div onclick="closeHelp()" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity"></div>
+            <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-200 dark:border-slate-800">
+                <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">Help & Documentation</h2>
+                    <button onclick="closeHelp()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">Getting Started</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-400">Upload your compliance policy document and choose an analysis method to get started.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">Analysis Methods</h3>
+                        <ul class="text-sm text-slate-600 dark:text-slate-400 space-y-2 list-disc list-inside">
+                            <li>Gap and Match Analysis: Fast compliance assessment (5-10s)</li>
+                            <li>Recommendation Analysis: Deep AI analysis (30-60s)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app-tailwind.js"></script>
+</body>
+</html>

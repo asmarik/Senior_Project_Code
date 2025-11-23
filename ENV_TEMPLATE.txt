@@ -1,0 +1,12 @@
+# Copy this content to a new file named: .env
+# Location: C:\Users\Sulei\Desktop\SP-Code-Final\.env
+
+# OpenAI API Configuration (Required for LLM features)
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL_NAME=gpt-4o-mini
+
+# LLM Feature Toggles (Optional)
+LLM_CLAUSE_MATCHING=true
+LLM_RERANKING=true
+FORCE_DISABLE_LLM=false
+

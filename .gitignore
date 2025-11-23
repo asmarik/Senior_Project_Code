@@ -1,0 +1,4 @@
+https://stackblitz.com/storage/blobs/eyJfcmFpbHMiOnsiZGF0YSI6NTg0Nzg4OTcsInB1ciI6ImJsb2JfaWQifX0=--3e5b3ea57b308bb1d0ac4cdc6c6bfd066fdf105c//.gitignore
+.env
+qdrant_db/
+__pycache__/
